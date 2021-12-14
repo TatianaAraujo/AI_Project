@@ -1,1 +1,7 @@
-data/test/*
+data/*
+venv/*
+__pycache__/baseModel.cpython-38.pyc
+__pycache__/baseModel.cpython-39.pyc
+__pycache__/dataProcess.cpython-38.pyc
+__pycache__/dataProcess.cpython-39.pyc
+__pycache__/plotTest.cpython-39.pyc
