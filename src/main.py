@@ -1,8 +1,12 @@
 from dataProcess import *
-from baseModel import *
+from model import *
 import tensorflow as tf
 
 if __name__ == '__main__':
+    checkData()
+
+
+def lol():
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:

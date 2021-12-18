@@ -5,9 +5,9 @@ SRC = src/
 PLOT = plot/
 data = data/
 
-EXE = $(SRC)/main.py
+EXE = $(SRC)main.py
 
-EXE_ARGS = vgg1 vgg2 vgg3
+EXE_ARGS = vgg1 vgg2 vgg3 dropout vgg3ImgAgu
 
 run: install activate
 	$(PYTHON) $(EXE)  vgg1

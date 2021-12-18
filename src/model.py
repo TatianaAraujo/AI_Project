@@ -11,6 +11,8 @@ from tensorflow.keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
 import info
 
+
+
 def define_model_one_block_vgg():
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu',
@@ -80,7 +82,39 @@ def define_model_three_block_vgg():
     return model
 
 
+def define_model_dropout():
+    model = Sequential()
+    model.add(Conv2D(32, (3, 3), activation='relu',
+                     kernel_initializer='he_uniform', padding='same',
+                     input_shape=(200, 200, 3)))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Conv2D(64, (3, 3), activation='relu',
+                     kernel_initializer='he_uniform', padding='same'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Conv2D(128, (3, 3), activation='relu',
+                     kernel_initializer='he_uniform', padding='same'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
+
+    # compile model
+    opt = SGD(lr=0.001, momentum=0.9)
+    model.compile(optimizer=opt, loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
 # plot diagnostic learning curves
+
+
 def summarize_diagnostics(history):
     print("Plot!!!!!\n\n")
     # plot loss
@@ -101,7 +135,7 @@ def summarize_diagnostics(history):
 
 # run the test harness for evaluating a model
 def run_test_harness():
-    if ( len(sys.argv) < 1):
+    if (len(sys.argv) < 1):
         print("Argument error")
         return
 
@@ -110,14 +144,25 @@ def run_test_harness():
     if (argument == "vgg1"):
         model = define_model_one_block_vgg()
 
-    elif(argument == "vvg2"):
+    elif(argument == "vgg2"):
         model = define_model_two_block_vgg()
 
-    else:
+    elif(argument == "vgg3" | argument == "vgg3ImgAgu"):
         model = define_model_three_block_vgg()
 
-    # create data generator
-    datagen = ImageDataGenerator(rescale=1.0/255.0)
+    else:
+        model = define_model_dropout()
+
+        # create data generator
+
+    if (sys.argv[1] == "vgg3ImgAgu"):
+        datagen = ImageDataGenerator(rescale=1.0/255.0,
+                                     width_shift_range=0.1,
+                                     height_shift_range=0.1,
+                                     horizontal_flip=True)
+
+    else:
+        datagen = ImageDataGenerator(rescale=1.0/255.0)
 
     # prepare iterators
     train_it = datagen.flow_from_directory(info.dataDir + 'train/',
