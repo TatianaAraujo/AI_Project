@@ -1,33 +1,32 @@
-VENV = env
-PYTHON = $(venv)/bin/python3.8
-PIP = $(venv)/bin/pip
+VENV_NAME = venv
+PYTHON = $(VENV_NAME)/bin/python3.8
 
 SRC = src/
 PLOT = plot/
 data = data/
 
-EXE = main.py
+EXE = $(SRC)/main.py
 
-.PHONY: all run runAll help
+EXE_ARGS = vgg1 vgg2 vgg3
 
-all: $(VENV)/bin/activate
+run: install activate
+	$(PYTHON) $(EXE)  vgg1
 
-run: $(VENV)/bin/activate
-	$(PYTHON) $(SRC)$(EXE) vgg1
+runAll:
+	for arg in $(EXE_ARGS); do \
+		echo Argument: $$arg; \
+		$(PYTHON) $(EXE) $$arg; \
+	done
 
-runAll: $(VENV)/bin/activate
-	$(PYTHON) $(SRC)$(EXE) vgg1
-	$(PYTHON) $(SRC)$(EXE) vgg2
-	$(PYTHON) $(SRC)$(EXE) vgg3
+install: activate
+	$(VENV_NAME)/bin/pip install --upgrade pip
+	$(VENV_NAME)/bin/pip install -r requirements.txt
 
-$(VENV)/bin/activate: requirements.txt
-	python3.8 -m venv .venv 
-	. $(VENV)/bin/activate
-	$(PIP) install -r requirements.txt
+activate: $(VENV_NAME)
+	. $(VENV_NAME)/bin/activate
 
-help:
-	@echo "Usage: make"
+$(VENV_NAME):
+	python3.8 -m venv $(VENV_NAME)
 
 clean:
-	rm -rf __pyache__
-
+	rm -r $(VENV_NAME)
