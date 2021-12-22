@@ -60,7 +60,7 @@ def checkData():
 
     if (not os.listdir(info.dataDir + "trainNoise/" + "cats/")):
         print("trainNoise directory doesn't cointain images")
-        createWhiteNoite()
+        #createWhiteNoite()
 
     if ( os.path.exists(info.modelDir) == False):
         print("Creating models directory")

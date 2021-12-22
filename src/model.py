@@ -157,11 +157,11 @@ def run_test_harness():
                                      width_shift_range=0.1,
                                      height_shift_range=0.1,
                                      horizontal_flip=True)
-        sourceDir = info.dataDir + "train/"
+        sourceDir = info.dataDir + "trainNoise/"
 
     else:
         datagen = ImageDataGenerator(rescale=1.0/255.0)
-        sourceDir = info.dataDir + "trainNoise/"
+        sourceDir = info.dataDir + "train/"
 
     # prepare iterators
     train_it = datagen.flow_from_directory(sourceDir,
@@ -174,11 +174,13 @@ def run_test_harness():
                                           batch_size=info.batchNumber,
                                           target_size=(200, 200))
 
-    history = model.fit(train_it,
-                        steps_per_epoch=len(train_it),
-                        validation_data=test_it,
-                        validation_steps=len(test_it),
-                        epochs=20, verbose=1)
+    print(sourceDir)
+
+    history = model.fit_generator(train_it,
+                                  steps_per_epoch=len(train_it),
+                                  validation_data=test_it,
+                                  validation_steps=len(test_it),
+                                  epochs=20, verbose=1)
 
     # evaluate model
     _, acc = model.evaluate_generator(test_it, steps=len(test_it), verbose=1)

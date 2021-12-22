@@ -10,24 +10,24 @@ EXE = $(SRC)main.py
 
 EXE_ARGS = vgg1 vgg2 vgg3 dropout
 
-.PHONY: all run runAll install activate clean
+.PHONY: all run runAll install activate clean checkDir
 
-all: $(PLOT) $(LOG) $(MODEL) run
+all: checkDir runAll
 
 run: install activate
-	$(PYTHON) $(EXE)  vgg1 > $(LOG)exec.vgg1.log 2> $(LOG)error.vgg1.log
+	$(PYTHON) $(EXE) vgg1 > $(LOG)stdout.vgg1.log 2> $(LOG)stderr.vgg1.log
 
 runAll: install activate
 	for arg in $(EXE_ARGS); do \
 		echo Argument: $$arg; \
-		$(PYTHON) $(EXE) $$arg > $(LOG)exec.$$arg.log 2> $(LOG)error.$$arg.log; \
+		$(PYTHON) $(EXE) $$arg > $(LOG)stdout.$$arg.log 2> $(LOG)stderr.$$arg.log; \
 	done
 	@echo Argument: vgg3 imgAgu 
-	@$(PYTHON) $(EXE) vgg3 imgAgu > $(LOG)exec.vgg3.imgAgu.log 2> $(LOG)error.vgg3.imgAgu.log
+	@$(PYTHON) $(EXE) vgg3 imgAgu > $(LOG)stdout.vgg3.imgAgu.log 2> $(LOG)stderr.vgg3.imgAgu.log
 
 install: activate
-	$(VENV_NAME)/bin/pip install --upgrade pip
-	$(VENV_NAME)/bin/pip install -r requirements.txt
+	$(VENV_NAME)/bin/pip install --upgrade pip > $(LOG)stdout.python.log 2> $(LOG)stderr.python.log
+	$(VENV_NAME)/bin/pip install -r requirements.txt >> $(LOG)stdout.python.log 2>> $(LOG)stderr.python.log
 
 activate: $(VENV_NAME)
 	. $(VENV_NAME)/bin/activate
@@ -35,8 +35,8 @@ activate: $(VENV_NAME)
 $(VENV_NAME):
 	python3.8 -m venv $(VENV_NAME)
 
-$(LOG) $(PLOT) $(MODEL):
-	mkdir -p $@
+checkDir: 
+	mkdir -p $(LOG) $(PLOT) $(MODEL)
 
 clean:
 	rm -r $(VENV_NAME)
