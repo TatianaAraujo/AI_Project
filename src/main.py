@@ -2,11 +2,7 @@ from dataProcess import *
 from model import *
 import tensorflow as tf
 
-if __name__ == '__main__':
-    checkData()
-
-
-def lol():
+def generateModels():
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:
@@ -20,3 +16,8 @@ def lol():
             print(e)
 
     run_test_harness()
+
+if __name__ == '__main__':
+    checkData()
+    generateModels()
+

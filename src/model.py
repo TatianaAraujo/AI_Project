@@ -12,7 +12,6 @@ from keras.preprocessing.image import ImageDataGenerator
 import info
 
 
-
 def define_model_one_block_vgg():
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu',
@@ -139,33 +138,33 @@ def run_test_harness():
         print("Argument error")
         return
 
-    argument = sys.argv[1]
-
-    if (argument == "vgg1"):
+    # Chose from different models
+    if (sys.argv[1] == "vgg1"):
         model = define_model_one_block_vgg()
 
-    elif(argument == "vgg2"):
+    elif(sys.argv[1] == "vgg2"):
         model = define_model_two_block_vgg()
 
-    elif(argument == "vgg3" | argument == "vgg3ImgAgu"):
+    elif(sys.argv[1] == "vgg3"):
         model = define_model_three_block_vgg()
 
     else:
         model = define_model_dropout()
 
-        # create data generator
-
-    if (sys.argv[1] == "vgg3ImgAgu"):
+    # Chose from normal train set or train set with noise images
+    if (len(sys.argv) > 2 and sys.argv[2] == "imgAgu"):
         datagen = ImageDataGenerator(rescale=1.0/255.0,
                                      width_shift_range=0.1,
                                      height_shift_range=0.1,
                                      horizontal_flip=True)
+        sourceDir = info.dataDir + "train/"
 
     else:
         datagen = ImageDataGenerator(rescale=1.0/255.0)
+        sourceDir = info.dataDir + "trainNoise/"
 
     # prepare iterators
-    train_it = datagen.flow_from_directory(info.dataDir + 'train/',
+    train_it = datagen.flow_from_directory(sourceDir,
                                            class_mode='binary',
                                            batch_size=info.batchNumber,
                                            target_size=(200, 200))
@@ -175,16 +174,22 @@ def run_test_harness():
                                           batch_size=info.batchNumber,
                                           target_size=(200, 200))
 
-    # fit model
-    history = model.fit_generator(train_it,
-                                  steps_per_epoch=len(train_it),
-                                  validation_data=test_it,
-                                  validation_steps=len(test_it),
-                                  epochs=20, verbose=1)
+    history = model.fit(train_it,
+                        steps_per_epoch=1,
+                        validation_data=test_it,
+                        validation_steps=1,
+                        epochs=1, verbose=1)
 
     # evaluate model
     _, acc = model.evaluate_generator(test_it, steps=len(test_it), verbose=1)
     print('> %.3f' % (acc * 100.0))
+
+    modelPath = "models/" + sys.argv[1]
+
+    if (len(sys.argv) > 2):
+        modelPath += "." + sys.argv[2]
+
+    model.save(modelPath)
 
     # learning curves
     summarize_diagnostics(history)
