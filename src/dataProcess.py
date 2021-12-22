@@ -51,6 +51,7 @@ def checkData():
         folderCreation()
 
     if (not os.listdir(info.dataDir + "train/")):
+        print("No default dataset")
         dataSelection()
 
     if(os.path.exists(info.dataDir + "trainNoise") == False):
@@ -64,6 +65,14 @@ def checkData():
     if ( os.path.exists(info.modelDir) == False):
         print("Creating models directory")
         os.makedirs(info.modelDir, exist_ok=True)
+
+    if ( os.path.exists(info.logDir) == False):
+        print("Creating log directory")
+        os.makedirs(info.logDir, exist_ok=True)
+
+    if ( os.path.exists(info.plotDir) == False):
+        print("Creating log directory")
+        os.makedirs(info.plotDir, exist_ok=True)
 
 def folderCreation():
     print("Creating folders")
@@ -81,6 +90,7 @@ def folderCreation():
             os.makedirs(newdir, exist_ok=True)
 
 def dataSelection():
+    print("Creating default dataset")
     rnd.seed(1)
     # define ratio of pictures to use for validation
     val_ratio = 0.25
@@ -88,7 +98,7 @@ def dataSelection():
     dataset_home = info.dataDir
 
     # copy training dataset images into subdirectories
-    src_train_directory = info.rawDataDir + '/train/'
+    src_train_directory = info.rawDataDir
 
     for file in os.listdir(src_train_directory):
         src = src_train_directory + '/' + file
@@ -114,11 +124,10 @@ def createWhiteNoite():
     destDir = info.dataDir + "trainNoise/"
 
     for subDir in os.listdir(sourceDir):
-        i = 0
         for file in os.listdir(sourceDir + subDir):
+            copyfile(sourceDir + subDir + "/" + file, destDir + subDir + "/" + file)
             image = load_img(sourceDir + subDir + "/" + file)
-            save_img(destDir + subDir + "/" + file, getNoisyImage(image))
-
+            save_img(destDir + subDir + "/" + "noise." + file, getNoisyImage(image))
 
 def getNoisyImage(image):
     imageArray = img_to_array(image)
