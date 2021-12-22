@@ -61,6 +61,10 @@ def checkData():
         print("trainNoise directory doesn't cointain images")
         createWhiteNoite()
 
+    if ( os.path.exists(info.modelDir) == False):
+        print("Creating models directory")
+        os.makedirs(info.modelDir, exist_ok=True)
+
 def folderCreation():
     print("Creating folders")
 
