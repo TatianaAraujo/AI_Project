@@ -11,7 +11,7 @@ from tensorflow.keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
 import info
 import argparse
-
+#remove this comment
 
 def define_model_one_block_vgg():
     model = Sequential()
