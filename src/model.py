@@ -169,17 +169,20 @@ def run_test_harness(arguments: argparse.ArgumentParser):
     # Chose where we going to get our images to train and to test
     if ( arguments.imgAgu):
         if ( arguments.pandas):
-            trainSourceDir = info.dataDir + "trainPanda/"
+            trainSourceDir = info.dataDir + "trainPandaNoise/"
             testSOurceDir = info.dataDir + "testPanda/"
             
-
         else:
             trainSourceDir = info.dataDir + "trainNoise/"
             testSOurceDir = info.dataDir + "test/"
 
     else:
-        trainSourceDir = info.dataDir + "train/"
-        testSOurceDir = info.dataDir + "test/"
+        if( arguments.pandas ):
+            trainSourceDir = info.dataDir + "trainPanda/"
+            testSOurceDir = info.dataDir + "testPanda/"
+        else:
+            trainSourceDir = info.dataDir + "train/"
+            testSOurceDir = info.dataDir + "test/"
 
 
     # prepare iterators

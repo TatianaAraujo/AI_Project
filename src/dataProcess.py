@@ -1,5 +1,6 @@
 # plot dog photos from the dogs vs cats dataset
 from genericpath import exists
+import shutil
 from matplotlib import pyplot
 from matplotlib.image import imread
 import os
@@ -10,6 +11,7 @@ import info
 import numpy as np
 from keras.preprocessing.image import img_to_array, array_to_img, load_img, save_img
 import matplotlib.pyplot as plt
+import getPandasImages
 
 
 def testDogPlot():
@@ -49,16 +51,36 @@ def checkData():
     # Create the basic data folders
     folderCreation()
 
+    # check if we have the default dataset
     if (not os.listdir(info.dataDir + "train/")):
         print("No default dataset")
         dataSelection()
 
+    # check if we have the default noise data set
     if (not os.listdir(info.dataDir + "trainNoise/" + "cats/")):
         print("trainNoise directory doesn't cointain images")
-        createWhiteNoite()
+        createWhiteNoise(info.dataDir + "train/cats/",
+                         info.dataDir + "trainNoise/cats/")
+        createWhiteNoise(info.dataDir + "train/dogs/",
+                         info.dataDir + "trainNoise/dogs/")
+
+    # Check if we have the panda data set
+    if (not os.listdir(info.dataDir + "trainPanda/" + "panda/")):
+        print("No images of panda")
+        os.makedirs(info.dataDir + "rawPanda", exist_ok=True)
+        getPandasImages.getPandaImages("pandas",
+                                       info.dataDir + "rawPanda")
+        dataSelection(info.dataDir + "rawPanda")
+        shutil.rmtree(info.dataDir + "rawPanda")
+
+    # check if we have the panda noise data set
+    if (not os.listdir(info.dataDir + "trainPandaNoise/" + "panda/")):
+        print("No noise for panda set")
+        createWhiteNoise(info.dataDir + "trainPanda/panda/",
+                         info.dataDir + "trainPandaNoise/panda/")
 
     # Create model, plot directies. They will be used to store the
-    #model and plots
+    # model and plots
     os.makedirs(info.modelDir, exist_ok=True)
     os.makedirs(info.plotDir, exist_ok=True)
 
@@ -81,62 +103,58 @@ def folderCreation():
     # Make directories for the panda data set
     os.makedirs(dataset_home + "trainPanda/", exist_ok=True)
     os.makedirs(dataset_home + "trainPanda/panda", exist_ok=True)
-    os.system("ln -sf " +  "../train/cats/ " + dataset_home + "trainPanda/cats")
-    os.system("ln -sf " +  "../train/dogs/ " + dataset_home + "trainPanda/dogs")
-    
+    os.system("ln -sf " + "../train/cats/ " + dataset_home + "trainPanda/cats")
+    os.system("ln -sf " + "../train/dogs/ " + dataset_home + "trainPanda/dogs")
+
     os.makedirs(dataset_home + "trainPandaNoise/", exist_ok=True)
     os.makedirs(dataset_home + "trainPandaNoise/panda", exist_ok=True)
-    os.system("ln -sf " +  "../trainNoise/cats/ " + dataset_home + "trainPandaNoise/cats")
-    os.system("ln -sf " +  "../trainNoise/dogs/ " + dataset_home + "trainPandaNoise/dogs")
+    os.system("ln -sf " + "../trainNoise/cats/ " +
+              dataset_home + "trainPandaNoise/cats")
+    os.system("ln -sf " + "../trainNoise/dogs/ " +
+              dataset_home + "trainPandaNoise/dogs")
 
     os.makedirs(dataset_home + "testPanda/", exist_ok=True)
     os.makedirs(dataset_home + "testPanda/panda", exist_ok=True)
-    os.system("ln -sf " +  "../test/cats/ " + dataset_home + "testPanda/cats")
-    os.system("ln -sf " +  "../test/dogs/ " + dataset_home + "testPanda/dogs")
+    os.system("ln -sf " + "../test/cats/ " + dataset_home + "testPanda/cats")
+    os.system("ln -sf " + "../test/dogs/ " + dataset_home + "testPanda/dogs")
 
-def dataSelection():
-    print("Creating default dataset")
+def dataSelection(dataSrc: str):
+    print("Creating dataset")
     rnd.seed(1)
+
     # define ratio of pictures to use for validation
     val_ratio = 0.25
 
-    dataset_home = info.dataDir
+    for file in os.listdir(dataSrc):
+        src = dataSrc + '/' + file
 
-    # copy training dataset images into subdirectories
-    src_train_directory = info.rawDataDir
+        if (src.endswith(".jpg")):
+            if rnd.random() < val_ratio:
+                dst_dir = 'test'
+            else:
+                dst_dir = 'train'
 
-    for file in os.listdir(src_train_directory):
-        src = src_train_directory + '/' + file
+            if file.startswith('cat'):
+                dst = info.dataDir + dst_dir + "/" + 'cats/' + file
+                os.rename(src, dst)
 
-        if rnd.random() < val_ratio:
-            dst_dir = 'test/'
-        else:
-            dst_dir = 'train/'
+            elif file.startswith('dog'):
+                dst = info.dataDir + dst_dir + "/" + 'dogs/' + file
+                os.rename(src, dst)
 
-        if file.startswith('cat'):
-            dst = dataset_home + dst_dir + 'cats/' + file
-            copyfile(src, dst)
-        elif file.startswith('dog'):
-            dst = dataset_home + dst_dir + 'dogs/' + file
-            copyfile(src, dst)
+            elif file.startswith('panda'):
+                dst = info.dataDir + dst_dir + "Panda/" + 'panda/' + file
+                os.rename(src, dst)
 
 
-def createWhiteNoite():
+def createWhiteNoise(sourceDir: str, destDir: str):
     print("Creating white noise images")
 
-    # create directories
-    sourceDir = info.dataDir + "train/"
-    destDir = info.dataDir + "trainNoise/"
-
-    for subDir in os.listdir(sourceDir):
-        for file in os.listdir(sourceDir + subDir):
-            if (file.endswith(".jpg")):
-                copyfile(sourceDir + subDir + "/" + file,
-                         destDir + subDir + "/" + file)
-                image = load_img(sourceDir + subDir + "/" + file)
-                save_img(destDir + subDir + "/" + "noise." +
-                         file, getNoisyImage(image))
-
+    for file in os.listdir(sourceDir):
+        if (file.endswith(".jpg")):
+            copyfile(sourceDir + file, destDir + file)
+            image = load_img(sourceDir + file)
+            save_img(destDir + "noise." + file, getNoisyImage(image))
 
 def getNoisyImage(image):
     imageArray = img_to_array(image)
