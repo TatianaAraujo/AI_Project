@@ -10,6 +10,7 @@ from keras.layers import Dropout
 from tensorflow.keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
 import info
+import argparse
 
 
 def define_model_one_block_vgg():
@@ -112,9 +113,7 @@ def define_model_dropout():
     return model
 
 # plot diagnostic learning curves
-
-
-def summarize_diagnostics(history):
+def summarize_diagnostics(history, arguments):
     print("Plot!!!!!\n\n")
     # plot loss
     pyplot.subplot(211)
@@ -126,55 +125,73 @@ def summarize_diagnostics(history):
     pyplot.title('Classification Accuracy')
     pyplot.plot(history.history['accuracy'], color='blue', label='train')
     pyplot.plot(history.history['val_accuracy'], color='orange', label='test')
-    # save plot to file
-    filename = sys.argv[0].split('/')[-1]
-    pyplot.savefig(info.plotDir + sys.argv[1] + '.png')
+
+    # save plot, depending on the arguments we have
+    if ( arguments.imgAgu ):
+        savePath = info.plotDir + arguments.model + "." + "imgAgu" + ".png"
+
+    else:
+        savePath = info.plotDir + arguments.model + ".png"
+
+    pyplot.savefig(savePath)
     pyplot.close()
 
 
 # run the test harness for evaluating a model
-def run_test_harness():
+def run_test_harness(arguments: argparse.ArgumentParser):
     if (len(sys.argv) < 1):
         print("Argument error")
         return
 
     # Chose from different models
-    if (sys.argv[1] == "vgg1"):
+    if (arguments.model == "vgg1"):
         model = define_model_one_block_vgg()
 
-    elif(sys.argv[1] == "vgg2"):
+    elif(arguments.model == "vgg2"):
         model = define_model_two_block_vgg()
 
-    elif(sys.argv[1] == "vgg3"):
+    elif(arguments.model == "vgg3"):
         model = define_model_three_block_vgg()
 
     else:
         model = define_model_dropout()
 
     # Chose from normal train set or train set with noise images
-    if (len(sys.argv) > 2 and sys.argv[2] == "imgAgu"):
+    if ( arguments.imgAgu ):
         datagen = ImageDataGenerator(rescale=1.0/255.0,
                                      width_shift_range=0.1,
                                      height_shift_range=0.1,
                                      horizontal_flip=True)
-        sourceDir = info.dataDir + "trainNoise/"
 
     else:
         datagen = ImageDataGenerator(rescale=1.0/255.0)
-        sourceDir = info.dataDir + "train/"
+
+    # Chose where we going to get our images to train and to test
+    if ( arguments.imgAgu):
+        if ( arguments.pandas):
+            trainSourceDir = info.dataDir + "trainPanda/"
+            testSOurceDir = info.dataDir + "testPanda/"
+            
+
+        else:
+            trainSourceDir = info.dataDir + "trainNoise/"
+            testSOurceDir = info.dataDir + "test/"
+
+    else:
+        trainSourceDir = info.dataDir + "train/"
+        testSOurceDir = info.dataDir + "test/"
+
 
     # prepare iterators
-    train_it = datagen.flow_from_directory(sourceDir,
+    train_it = datagen.flow_from_directory(trainSourceDir,
                                            class_mode='binary',
                                            batch_size=info.batchNumber,
                                            target_size=(200, 200))
 
-    test_it = datagen.flow_from_directory(info.dataDir + 'test/',
+    test_it = datagen.flow_from_directory(testSOurceDir,
                                           class_mode='binary',
                                           batch_size=info.batchNumber,
                                           target_size=(200, 200))
-
-    print(sourceDir)
 
     history = model.fit_generator(train_it,
                                   steps_per_epoch=len(train_it),
@@ -186,12 +203,16 @@ def run_test_harness():
     _, acc = model.evaluate_generator(test_it, steps=len(test_it), verbose=1)
     print('> %.3f' % (acc * 100.0))
 
-    modelPath = "models/" + sys.argv[1]
+    saveCurrentModel(model)
 
-    if (len(sys.argv) > 2):
+    # learning curves
+    summarize_diagnostics(history, arguments)
+
+def saveCurrentModel(model: Sequential, arguments: argparse.ArgumentParser):
+    modelPath = "models/" + arguments.model
+
+    if (arguments.imgAgu):
         modelPath += "." + sys.argv[2]
 
     model.save(modelPath)
-
-    # learning curves
-    summarize_diagnostics(history)
+    

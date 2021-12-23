@@ -46,33 +46,22 @@ def testCatPlot():
 
 
 def checkData():
-    if (os.path.exists(info.dataDir) == False):
-        print("data directory doesn't exist")
-        folderCreation()
+    # Create the basic data folders
+    folderCreation()
 
     if (not os.listdir(info.dataDir + "train/")):
         print("No default dataset")
         dataSelection()
 
-    if(os.path.exists(info.dataDir + "trainNoise") == False):
-        print("trainNoise directory doesn't exist")
-        folderCreation()
-
     if (not os.listdir(info.dataDir + "trainNoise/" + "cats/")):
         print("trainNoise directory doesn't cointain images")
-        #createWhiteNoite()
+        createWhiteNoite()
 
-    if ( os.path.exists(info.modelDir) == False):
-        print("Creating models directory")
-        os.makedirs(info.modelDir, exist_ok=True)
+    # Create model, plot directies. They will be used to store the
+    #model and plots
+    os.makedirs(info.modelDir, exist_ok=True)
+    os.makedirs(info.plotDir, exist_ok=True)
 
-    if ( os.path.exists(info.logDir) == False):
-        print("Creating log directory")
-        os.makedirs(info.logDir, exist_ok=True)
-
-    if ( os.path.exists(info.plotDir) == False):
-        print("Creating log directory")
-        os.makedirs(info.plotDir, exist_ok=True)
 
 def folderCreation():
     print("Creating folders")
@@ -88,6 +77,22 @@ def folderCreation():
         for labldir in ['dogs/', 'cats/']:
             newdir = dataset_home + subdir + labldir
             os.makedirs(newdir, exist_ok=True)
+
+    # Make directories for the panda data set
+    os.makedirs(dataset_home + "trainPanda/", exist_ok=True)
+    os.makedirs(dataset_home + "trainPanda/panda", exist_ok=True)
+    os.system("ln -sf " +  "../train/cats/ " + dataset_home + "trainPanda/cats")
+    os.system("ln -sf " +  "../train/dogs/ " + dataset_home + "trainPanda/dogs")
+    
+    os.makedirs(dataset_home + "trainPandaNoise/", exist_ok=True)
+    os.makedirs(dataset_home + "trainPandaNoise/panda", exist_ok=True)
+    os.system("ln -sf " +  "../trainNoise/cats/ " + dataset_home + "trainPandaNoise/cats")
+    os.system("ln -sf " +  "../trainNoise/dogs/ " + dataset_home + "trainPandaNoise/dogs")
+
+    os.makedirs(dataset_home + "testPanda/", exist_ok=True)
+    os.makedirs(dataset_home + "testPanda/panda", exist_ok=True)
+    os.system("ln -sf " +  "../test/cats/ " + dataset_home + "testPanda/cats")
+    os.system("ln -sf " +  "../test/dogs/ " + dataset_home + "testPanda/dogs")
 
 def dataSelection():
     print("Creating default dataset")
@@ -125,9 +130,13 @@ def createWhiteNoite():
 
     for subDir in os.listdir(sourceDir):
         for file in os.listdir(sourceDir + subDir):
-            copyfile(sourceDir + subDir + "/" + file, destDir + subDir + "/" + file)
-            image = load_img(sourceDir + subDir + "/" + file)
-            save_img(destDir + subDir + "/" + "noise." + file, getNoisyImage(image))
+            if (file.endswith(".jpg")):
+                copyfile(sourceDir + subDir + "/" + file,
+                         destDir + subDir + "/" + file)
+                image = load_img(sourceDir + subDir + "/" + file)
+                save_img(destDir + subDir + "/" + "noise." +
+                         file, getNoisyImage(image))
+
 
 def getNoisyImage(image):
     imageArray = img_to_array(image)

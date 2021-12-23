@@ -15,15 +15,15 @@ EXE_ARGS = vgg1 vgg2 vgg3 dropout
 all: checkDir runAll
 
 run: install activate
-	$(PYTHON) $(EXE) vgg1 > $(LOG)stdout.vgg1.log 2> $(LOG)stderr.vgg1.log
+	$(PYTHON) $(EXE) --model vgg1 
 
 runAll: install activate
 	for arg in $(EXE_ARGS); do \
-		echo Argument: $$arg; \
-		$(PYTHON) $(EXE) $$arg > $(LOG)stdout.$$arg.log 2> $(LOG)stderr.$$arg.log; \
+		echo Argument: --model $$arg; \
+		$(PYTHON) $(EXE) --model $$arg > $(LOG)stdout.$$arg.log 2> $(LOG)stderr.$$arg.log; \
 	done
-	@echo Argument: vgg3 imgAgu 
-	@$(PYTHON) $(EXE) vgg3 imgAgu > $(LOG)stdout.vgg3.imgAgu.log 2> $(LOG)stderr.vgg3.imgAgu.log
+	@echo Argument: --model vgg3 --imgAgu 
+	@$(PYTHON) $(EXE) --model vgg3 --imgAgu > $(LOG)stdout.vgg3.imgAgu.log 2> $(LOG)stderr.vgg3.imgAgu.log
 
 install: activate
 	$(VENV_NAME)/bin/pip install --upgrade pip > $(LOG)stdout.python.log 2> $(LOG)stderr.python.log
@@ -35,8 +35,9 @@ activate: $(VENV_NAME)
 $(VENV_NAME):
 	python3.8 -m venv $(VENV_NAME)
 
-checkDir: 
+checkDir: install
 	mkdir -p $(LOG) $(PLOT) $(MODEL)
+	$(PYTHON) $(EXE) --onlyCreateDir
 
 clean:
 	rm -r $(VENV_NAME)
