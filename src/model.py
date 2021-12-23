@@ -178,12 +178,14 @@ def run_test_harness(arguments: argparse.ArgumentParser):
 
     else:
         if( arguments.pandas ):
+            print("passou")
             trainSourceDir = info.dataDir + "trainPanda/"
             testSOurceDir = info.dataDir + "testPanda/"
         else:
             trainSourceDir = info.dataDir + "train/"
             testSOurceDir = info.dataDir + "test/"
 
+    print(trainSourceDir)
 
     # prepare iterators
     train_it = datagen.flow_from_directory(trainSourceDir,
